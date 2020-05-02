@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Detective</string>
+    <string name="crime_title_hint">Enter a title for the crime</string>
+    <string name="crime_title_label">Title</string>
+    <string name="crime_details_label">Details</string>
+    <string name="crime_solved_label">Solved</string>
+    <string name="unknown_city">Unknown</string>
+    <string name="q_title">Item %1$d</string>
+    <string name="crime_title">Crime Title</string>
+    <string name="crime_date">Crime Date</string>
+    <string name="first">&lt;\n First Crime</string>
+    <string name="last_crime">&gt;\n Last Crime</string>
+    <string name="date_picker_title">Date of crime</string>
+    <string name="time_picker_title">Time of crime</string>
+    <string name="second_picker_title">Seconds</string>
+    <string name="enter_seconds">Enter the seconds</string>
+    <string name="ok">ok</string>
+</resources>
