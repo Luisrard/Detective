@@ -19,6 +19,10 @@ public class Crime {
         mCity = CrimeLab.getmCity();
     }
 
+    public Crime(UUID id){
+        mId = id;
+    }
+
     public UUID getmId() {
         return mId;
     }
@@ -56,6 +60,10 @@ public class Crime {
 
     public void setmCity(String mCity) {
         this.mCity = mCity;
+    }
+
+    public String getmCity() {
+        return mCity;
     }
     
     public boolean ismSerious() {

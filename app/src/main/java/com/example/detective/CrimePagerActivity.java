@@ -137,8 +137,9 @@ public class CrimePagerActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        CrimeLab.get(context).deleteCrime(mCrimes.get(mPage).getmId());
-
+                        CrimeLab crimeLab = CrimeLab.get(context);
+                        crimeLab.deleteCrime(mCrimes.get(mPage).getmId());
+                        mCrimes = crimeLab.getCrimes();//Assigning values
                         if(mCrimes.size()>0) {//If exist one or more crimes send the method setAdapter to update
                             if(mCrimes.size() > 1 && mPage > 0){//This is for move to the left
                                 mPage--;
@@ -146,7 +147,6 @@ public class CrimePagerActivity extends AppCompatActivity {
                             else{
                                 mPage = 0;
                             }
-
                             reiniciarActivity((Activity) context,mCrimes.get(mPage).getmId());
                         }
                         else{//Else finish the activity
