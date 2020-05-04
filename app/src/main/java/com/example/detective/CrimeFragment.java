@@ -52,6 +52,7 @@ public class CrimeFragment extends Fragment {
         mSolvedCheckBox = v.findViewById(R.id.crime_solved);
         mSeriousCheckBox = v.findViewById(R.id.crime_serious);
 
+        mSeriousCheckBox.setChecked(mCrime.ismSerious());
         mSolvedCheckBox.setChecked(mCrime.ismSolved());
         mTitleField.setText(mCrime.getmTitle());
         mDateButton.setText(mCrime.getDateFormat());
