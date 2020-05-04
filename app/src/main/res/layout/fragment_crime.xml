@@ -25,8 +25,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
     <CheckBox
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:id="@+id/crime_solved"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/crime_solved_label"/>
+    <CheckBox
+        android:id="@+id/crime_serious"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/serious_crime_check"/>
 </LinearLayout>

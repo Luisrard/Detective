@@ -13,16 +13,10 @@ public class Crime {
     private boolean mSolved;
     private String mCity;
 
-    public Crime(){
+    public Crime() {
         mId = UUID.randomUUID();
         mDate = new Date();
-        mCity = "Unknown";
-    }
-
-    public Crime(String city){
-        mId = UUID.randomUUID();
-        mDate = new Date();
-        mCity = city;
+        mCity = CrimeLab.getmCity();
     }
 
     public UUID getmId() {

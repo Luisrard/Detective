@@ -30,6 +30,7 @@ public class CrimeFragment extends Fragment {
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
+    private CheckBox mSeriousCheckBox;
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final int REQUEST_DATE = 0;
@@ -49,14 +50,14 @@ public class CrimeFragment extends Fragment {
         mTitleField = v.findViewById(R.id.crime_title);
         mDateButton = v.findViewById(R.id.crime_date);
         mSolvedCheckBox = v.findViewById(R.id.crime_solved);
+        mSeriousCheckBox = v.findViewById(R.id.crime_serious);
 
         mSolvedCheckBox.setChecked(mCrime.ismSolved());
         mTitleField.setText(mCrime.getmTitle());
         mDateButton.setText(mCrime.getDateFormat());
-        //mDateButton.setEnabled(false);
-        if(mCrime.ismSerious()) {
-            mTitleField.setTextColor(getResources().getColor(R.color.colorRed));
-        }
+
+        printField();
+
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,6 +89,13 @@ public class CrimeFragment extends Fragment {
                 mCrime.setmSolved(isChecked);
             }
         });
+        mSeriousCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mCrime.setmSerious(isChecked);
+                printField();
+            }
+        });
         return v;
     }
 
@@ -99,10 +107,18 @@ public class CrimeFragment extends Fragment {
         if(requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setmDate(date);
-            mDateButton.setText(mCrime.getDateFormat());
+            printField();
         }
     }
 
+    public void printField(){
+        if(mCrime.ismSerious()) {
+            mTitleField.setTextColor(getResources().getColor(R.color.colorRed));
+        }
+        else{
+            mTitleField.setTextColor(getResources().getColor(R.color.colorBlack));
+        }
+    }
     public static CrimeFragment newInstance(UUID crimeId){
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);

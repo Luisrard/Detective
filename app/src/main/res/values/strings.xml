@@ -15,4 +15,11 @@
     <string name="second_picker_title">Seconds</string>
     <string name="enter_seconds">Enter the seconds</string>
     <string name="ok">ok</string>
+    <string name="new_crime">New Crime</string>
+    <string name="show_subtitle">Show Subtitle</string>
+    <string name="hide_subtitle">Hide Subtitle</string>
+    <string name="subtitle_format">%1d crimes</string>
+    <string name="delete_crime">Delete Crime</string>
+    <string name="hint_add_crime">Press + to Add a New Crime</string>
+    <string name="serious_crime_check">Serious</string>
 </resources>

@@ -26,7 +26,8 @@ public class CrimeListActivity extends SingleFragmentActivity implements Locatio
     protected Fragment createFragment() {
         startLocationService();
         //Bundle to hold the data to pass
-        return CrimeListFragment.newInstance(getCity());
+        CrimeLab.setmCity(getCity());
+        return CrimeListFragment.newInstance();
     }
 
     private void startLocationService() {//Function to start location service
