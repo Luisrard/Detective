@@ -100,7 +100,6 @@ public class CrimePagerActivity extends AppCompatActivity {
 
     }
 
-
     public void getPosition(UUID idCrime) {//Function to get the position through an Id
         for (int i = 0; i < mCrimes.size(); i++) {
             if (mCrimes.get(i).getmId().equals(idCrime)) {

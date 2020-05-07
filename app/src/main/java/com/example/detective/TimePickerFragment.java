@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
@@ -39,6 +38,7 @@ public class TimePickerFragment extends DialogFragment {
         mTimePicker = vT.findViewById(R.id.dialog_time_picker);
         mTimePicker.setHour(mDate.getHours());
         mTimePicker.setHour(mDate.getHours());
+        mSeconds.setText(String.valueOf(mDate.getSeconds()));
 
         return new AlertDialog.Builder(getActivity())
                 .setView(vT)

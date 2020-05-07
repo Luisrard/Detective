@@ -105,6 +105,7 @@ public class CrimeLab {
                             );
         return new CrimeCursorWrapper(cursor);
     }
+
     private static ContentValues getContentValues (Crime crime){
         ContentValues values = new ContentValues();
         values.put(CrimeTable.Cols.UUID, crime.getmId().toString());
