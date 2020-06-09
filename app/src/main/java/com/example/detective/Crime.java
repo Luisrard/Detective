@@ -1,5 +1,6 @@
 package com.example.detective;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -12,6 +13,15 @@ public class Crime {
     private Date mDate;
     private boolean mSolved;
     private String mCity;
+    private String mSuspect;
+
+    public String getmSuspect() {
+        return mSuspect;
+    }
+
+    public void setmSuspect(String mSuspect) {
+        this.mSuspect = mSuspect;
+    }
 
     public Crime() {
         mId = UUID.randomUUID();
@@ -72,6 +82,10 @@ public class Crime {
 
     public void setmSerious(boolean mSerious) {
         this.mSerious = mSerious;
+    }
+
+    public String getPhotoFileName(){
+        return "IMG" + getmId().toString() + ".jpg";
     }
 }
 

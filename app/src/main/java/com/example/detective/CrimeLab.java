@@ -4,7 +4,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -90,7 +92,8 @@ public class CrimeLab {
     public void updateCrime (Crime crime){
         String uuidString = crime.getmId().toString();
         ContentValues values = getContentValues(crime);
-        mDatabase.update(CrimeTable.NAME,values,CrimeTable.Cols.UUID + " = ?",new String[] {uuidString});
+        mDatabase.update(CrimeTable.NAME,values,CrimeTable.Cols.UUID + " = ?"
+                ,new String[] {uuidString});
     }
 
     private CursorWrapper queryCrimes(String whereClause, String[] whereArgs) {
@@ -114,6 +117,12 @@ public class CrimeLab {
         values.put(CrimeTable.Cols.SOLVED, crime.ismSolved() ? 1 : 0);
         values.put(CrimeTable.Cols.SERIOUS, crime.ismSerious() ? 1 : 0);
         values.put(CrimeTable.Cols.CITY, crime.getmCity());
+        values.put(CrimeTable.Cols.SUSPECT, crime.getmSuspect());
         return values;
+    }
+
+    public File getPhotoFile(Crime crime){
+        File filesDir = Environment.getExternalStorageDirectory();
+        return new File(filesDir,crime.getPhotoFileName());
     }
 }

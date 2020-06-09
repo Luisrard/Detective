@@ -8,8 +8,8 @@
     <string name="q_title">Item %1$d</string>
     <string name="crime_title">Crime Title</string>
     <string name="crime_date">Crime Date</string>
-    <string name="first">&lt;\n First Crime</string>
-    <string name="last_crime">&gt;\n Last Crime</string>
+    <string name="first">&lt;\n Previous</string>
+    <string name="last_crime">&gt;\n Next</string>
     <string name="date_picker_title">Date of crime</string>
     <string name="time_picker_title">Time of crime</string>
     <string name="second_picker_title">Seconds</string>
@@ -22,4 +22,13 @@
     <string name="delete_crime">Delete Crime</string>
     <string name="hint_add_crime">Press + to Add a New Crime</string>
     <string name="serious_crime_check">Serious</string>
+    <string name="chose_suspect">Chose suspect</string>
+    <string name="send_crime_report">Send crime report</string>
+    <string name="crime_report">%1d The crime was discovered on %2d. %3d, and %4d</string>
+    <string name="crime_report_solved">The case is solved</string>
+    <string name="crime_report_unsolved">The case is not solved</string>
+    <string name="crime_report_no_suspect">There in no suspect</string>
+    <string name="crime_report_suspect">The suspect is %1d</string>
+    <string name="crime_report_subject">CriminalIntent Crime Report</string>
+    <string name="send_report">Send crime report via</string>
 </resources>
