@@ -12,7 +12,8 @@
         android:id="@+id/crime_image"
         android:cropToPadding="true"
         android:src="@drawable/ic_contact"
-        />
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

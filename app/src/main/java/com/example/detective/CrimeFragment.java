@@ -1,6 +1,7 @@
 package com.example.detective;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -32,17 +33,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
+import static androidx.core.content.ContextCompat.getExternalCacheDirs;
+import static androidx.core.content.ContextCompat.getExternalFilesDirs;
 
 
 public class CrimeFragment extends Fragment {
@@ -62,7 +68,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_PHOTO = 3;
     private static final int REQUEST_TAKE_PHOTO = 5;
 
-    private final String FOLDER_ROOT = "imageApp/";
+    private final String FOLDER_ROOT = "imageDetective/";
     private final String ROUT_IMAGE = FOLDER_ROOT + "mCrimes";
     private String path;
     private boolean mTakePhoto;
@@ -276,7 +282,11 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(options[which].equals("Tomar Foto")){
-                    takePhoto();
+                    try {
+                        takePhoto();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 else if(options[which].equals("Cargar Imagen")){
                     Intent intent = new Intent(Intent.ACTION_PICK,
@@ -293,75 +303,23 @@ public class CrimeFragment extends Fragment {
         alertOption.show();
     }
 
-    private void takePhoto(){
-        File fileImage = new File(Environment.getExternalStorageDirectory(),ROUT_IMAGE);
-        boolean isCreate = fileImage.exists();
-        String nameImage = "";
-        if(!isCreate){
-            isCreate = fileImage.mkdir();
-        }
-        if(isCreate){
-            nameImage = mCrime.getPhotoFileName();
-        }
-
-        path = Environment.getExternalStorageDirectory() +
-                File.separator + ROUT_IMAGE + File.separator + nameImage;
-
-        File image = new File(path);
-
+    private void takePhoto() throws IOException {
+        File image = File.createTempFile(mCrime.getPhotoFileName(),".jpg");
+        path = image.getPath();
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(intent.resolveActivity(){
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            String authorities = getActivity().getApplicationContext().getPackageName() + ".provider";
-            Uri imageUri = FileProvider.getUriForFile(getActivity(),authorities,image);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        }
-        else {
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(image));
         }
         startActivityForResult(intent,REQUEST_TAKE_PHOTO);
     }
 
     private boolean validatePermission() {
-        if(Build.VERSION.SDK_INT<Build.VERSION_CODES.M){//Marshmallow
-            return true;
-        }
-        else if(checkSelfPermission(getContext(),CAMERA)== PackageManager.PERMISSION_GRANTED &&
-                checkSelfPermission(getContext(),WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){
-            return true;
-        }
-        if(shouldShowRequestPermissionRationale(CAMERA) || shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)){
-            chargeDialogRecommendation();
-        }
-        else{
-            requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE,CAMERA},100);
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1000);
+
         }
         return false;
     }
 
-    private void chargeDialogRecommendation() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
-        dialog.setTitle("Permission disabled");
-        dialog.setMessage("You should enable permissions");
-        dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                    requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE,CAMERA},100);
-            }
-        });
-        dialog.show();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 100){
-            if(grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                mTakePhoto = false;
-            }
-        }
-    }
 }
 
