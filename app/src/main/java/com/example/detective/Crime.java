@@ -85,7 +85,7 @@ public class Crime {
     }
 
     public String getPhotoFileName(){
-        return "IMG" + getmId().toString() + ".jpg";
+        return mId.toString() + ".jpg";
     }
 }
 

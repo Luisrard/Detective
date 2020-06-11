@@ -1,20 +1,24 @@
 package com.example.detective;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PatternMatcher;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,14 +30,19 @@ import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import java.io.File;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
+
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 
 public class CrimeFragment extends Fragment {
@@ -45,13 +54,18 @@ public class CrimeFragment extends Fragment {
     private Button mReportButton;
     private Button mSuspectButton;
     private ImageButton mImageCrime;
-    private File mPhotoFile;
 
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final int REQUEST_CONTACT = 1;
-    private static final int REQUEST_CAMERA = 2;
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_PHOTO = 3;
+    private static final int REQUEST_TAKE_PHOTO = 5;
+
+    private final String FOLDER_ROOT = "imageApp/";
+    private final String ROUT_IMAGE = FOLDER_ROOT + "mCrimes";
+    private String path;
+    private boolean mTakePhoto;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,7 +73,6 @@ public class CrimeFragment extends Fragment {
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         mCrime = crimeLab.getCrime(crimeId);
-        mPhotoFile = crimeLab.getPhotoFile(mCrime);
     }
 
     @Nullable
@@ -78,7 +91,7 @@ public class CrimeFragment extends Fragment {
         mSolvedCheckBox.setChecked(mCrime.ismSolved());
         mTitleField.setText(mCrime.getmTitle());
         mDateButton.setText(mCrime.getDateFormat());
-
+        mTakePhoto = validatePermission();
         printField();
 
         mDateButton.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +101,7 @@ public class CrimeFragment extends Fragment {
                 DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getmDate());
                 dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
                 dialog.show(manager, DIALOG_DATE);
+
             }
         });
         mTitleField.addTextChangedListener(new TextWatcher() {
@@ -118,6 +132,7 @@ public class CrimeFragment extends Fragment {
                 printField();
             }
         });
+        //Button to send the report
         mReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,21 +153,14 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        final Intent captureImage   = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        //Image button show the image crime
         mImageCrime.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Uri uri = FileProvider.getUriForFile(getActivity(),"com.example.detective.FileP rovider",
-                        mPhotoFile);
-                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                List<ResolveInfo> cameraActivities = getActivity().getPackageManager().
-                        queryIntentActivities(captureImage, PackageManager.MATCH_DEFAULT_ONLY);
-                for (ResolveInfo activity : cameraActivities){
-                    getActivity().grantUriPermission(activity.activityInfo.toString(),uri,
-                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                }
-                startActivityForResult(captureImage,REQUEST_CAMERA);
-                return false;
+                if(mTakePhoto)
+                    chargeImage();
+               return false;
             }
         });
         if(mCrime.getmSuspect() != null){
@@ -163,10 +171,6 @@ public class CrimeFragment extends Fragment {
         if(packageManager.resolveActivity(pickContact, packageManager.MATCH_DEFAULT_ONLY) == null){
             mSuspectButton.setEnabled(false);
         }
-
-
-        boolean canTakePhoto = (mPhotoFile != null && captureImage.resolveActivity(packageManager) != null);
-        mImageCrime.setEnabled(canTakePhoto);
 
         return v;
     }
@@ -200,6 +204,20 @@ public class CrimeFragment extends Fragment {
             } finally {
                 cursor.close();
             }
+        }
+        else  if(requestCode == REQUEST_PHOTO && data != null) {
+            Uri mPath = data.getData();
+            mImageCrime.setImageURI(mPath);
+        }
+        else if(requestCode == REQUEST_TAKE_PHOTO){
+            MediaScannerConnection.scanFile(getActivity(), new String[]{path}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        @Override
+                        public void onScanCompleted(String path, Uri uri) {
+                            Bitmap bitmap = BitmapFactory.decodeFile(path);
+                            mImageCrime.setImageBitmap(bitmap);
+                        }
+                    });
         }
     }
 
@@ -243,6 +261,107 @@ public class CrimeFragment extends Fragment {
     public void onPause() {
         super.onPause();
         CrimeLab.get(getActivity()).updateCrime(mCrime);
+    }
+
+
+
+    //Take photo
+
+    @SuppressLint("IntentReset")
+    private void chargeImage() {
+        final CharSequence[] options = {"Tomar Foto","Cargar Imagen","Cancelar"};
+        final AlertDialog.Builder alertOption = new AlertDialog.Builder(getContext());
+        alertOption.setTitle("Selecciona una opción");
+        alertOption.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(options[which].equals("Tomar Foto")){
+                    takePhoto();
+                }
+                else if(options[which].equals("Cargar Imagen")){
+                    Intent intent = new Intent(Intent.ACTION_PICK,
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/");
+                    startActivityForResult(Intent.createChooser(intent, "Select the app"),
+                            REQUEST_PHOTO);
+                }
+                else{
+                    dialog.dismiss();
+                }
+            }
+        });
+        alertOption.show();
+    }
+
+    private void takePhoto(){
+        File fileImage = new File(Environment.getExternalStorageDirectory(),ROUT_IMAGE);
+        boolean isCreate = fileImage.exists();
+        String nameImage = "";
+        if(!isCreate){
+            isCreate = fileImage.mkdir();
+        }
+        if(isCreate){
+            nameImage = mCrime.getPhotoFileName();
+        }
+
+        path = Environment.getExternalStorageDirectory() +
+                File.separator + ROUT_IMAGE + File.separator + nameImage;
+
+        File image = new File(path);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            String authorities = getActivity().getApplicationContext().getPackageName() + ".provider";
+            Uri imageUri = FileProvider.getUriForFile(getActivity(),authorities,image);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        }
+        else {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(image));
+        }
+        startActivityForResult(intent,REQUEST_TAKE_PHOTO);
+    }
+
+    private boolean validatePermission() {
+        if(Build.VERSION.SDK_INT<Build.VERSION_CODES.M){//Marshmallow
+            return true;
+        }
+        else if(checkSelfPermission(getContext(),CAMERA)== PackageManager.PERMISSION_GRANTED &&
+                checkSelfPermission(getContext(),WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){
+            return true;
+        }
+        if(shouldShowRequestPermissionRationale(CAMERA) || shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)){
+            chargeDialogRecommendation();
+        }
+        else{
+            requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE,CAMERA},100);
+        }
+        return false;
+    }
+
+    private void chargeDialogRecommendation() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setTitle("Permission disabled");
+        dialog.setMessage("You should enable permissions");
+        dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                    requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE,CAMERA},100);
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 100){
+            if(grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                mTakePhoto = false;
+            }
+        }
     }
 }
 
